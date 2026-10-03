@@ -65,22 +65,18 @@ function parseAnalyticsFilters(query: Record<string, unknown>): AnalyticsFilterP
  */
 router.post('/auth/login', adminLoginLimiter, (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { password } = req.body || {};
 
-    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+    if (!password || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
-        error: 'Email and password are required',
+        error: 'Administrator password is required',
       });
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const isValidEmail =
-      cleanEmail === DEFAULT_ADMIN_EMAIL.toLowerCase() ||
-      cleanEmail === FALLBACK_ADMIN_EMAIL.toLowerCase() ||
-      cleanEmail === 'admin';
+    const cleanEmail = DEFAULT_ADMIN_EMAIL.trim().toLowerCase();
 
-    if (!isValidEmail || !verifyAdminPassword(password)) {
+    if (!verifyAdminPassword(password)) {
       return res.status(401).json({
         success: false,
         error: 'Invalid admin credentials. Please verify your email and password.',
