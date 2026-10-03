@@ -2,6 +2,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import adminRoutes from './admin-routes.ts';
+import { db } from '../db/index.ts';
+import { surveyResponses } from '../db/schema.ts';
 
 dotenv.config();
 
@@ -19,8 +21,22 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'dadu-business-insights-admin' });
+app.get('/api/health', async (_req, res) => {
+  try {
+    await db.select({ id: surveyResponses.id }).from(surveyResponses).limit(1);
+    res.json({
+      ok: true,
+      service: 'dadu-business-insights-admin',
+      database: 'connected',
+    });
+  } catch (error) {
+    console.error('Admin health database check failed:', error);
+    res.status(503).json({
+      ok: false,
+      service: 'dadu-business-insights-admin',
+      database: 'unreachable',
+    });
+  }
 });
 
 app.use('/api/admin', adminRoutes);
